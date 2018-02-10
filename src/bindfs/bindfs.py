@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 
 
@@ -12,6 +10,7 @@ from fuse import FuseOSError, Operations, LoggingMixIn
 class BindFs(Operations, LoggingMixIn):
 
     def __init__(self, root_fd):
+        self.root_fd = root_fd
         os.fchdir(root_fd)
         self.rwlock = Lock()
 
