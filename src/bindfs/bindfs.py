@@ -1,20 +1,25 @@
 import os
+import logging
 
 
 from errno import EACCES
 from threading import Lock
 
-from fuse import FuseOSError, Operations, LoggingMixIn
+from fuse import FuseOSError, Operations
+
+logger = logging.getLogger(__name__)
 
 
-class BindFs(Operations, LoggingMixIn):
+class BindFs(Operations):
 
     def __init__(self, root_fd):
+        logger.debug("init bindfs")
         self.root_fd = root_fd
         os.fchdir(root_fd)
         self.rwlock = Lock()
 
     def __call__(self, op, path, *args):
+        logger.debug("call: {}, path: {}".format(op, os.path.realpath("." + path)))
         return super(BindFs, self).__call__(op, "." + path, *args)
 
     def access(self, path, mode):
