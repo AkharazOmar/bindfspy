@@ -10,17 +10,15 @@ from fuse import FUSE
 
 from bindfs.bindfs import BindFs
 
+logger = logging.getLogger(__name__)
+
 
 class VerboseAction(argparse._StoreTrueAction):
     def __call__(self, parser, namespace, values, option_string=None):
-        if getattr(namespace, 'foreground', False) or getattr(namespace, 'console', False):
+        if getattr(namespace, 'foreground', False) or getattr(namespace, 'output', False):
             setattr(namespace, self.dest, self.const)
         else:
             parser.error('Verbose need foreground or console')
-
-
-
-logger = logging.getLogger(__name__)
 
 
 @contextmanager
@@ -161,12 +159,13 @@ def main(*args, **kwargs):
         level = logging.INFO
         if args_parse.verbose:
             level = logging.DEBUG
+        root_logger = logging.getLogger()
+        root_logger.setLevel(level)
 
-        logging.basicConfig(
-            level=level,
-            format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
-            datefmt="%m-%d %H:%M",
-        )
+        if args_parse.foreground:
+            console = logging.StreamHandler()
+            console.setLevel(level)
+            logging.getLogger().addHandler(console)
 
         if args_parse.output:
             logfile = logging.FileHandler(args_parse.output)
